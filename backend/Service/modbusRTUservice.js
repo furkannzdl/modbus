@@ -1,4 +1,6 @@
-const Modbus = require('./modbus');
+const Modbus = require('../modbus');
+const { writeMeasurement } = require('../Connection/influxdb');
+
 
 class ModbusService {
   constructor() {
@@ -15,7 +17,18 @@ readMeasurement() {
       { address: 1001, name: "MB_ADD_R_CTR", label: "Current Transformer Ratio", unit: "", scale: 0.1, description: "1–2000" },
       { address: 1002, name: "MB_ADD_R_VL1", label: "L1 Phase Voltage", unit: "V", scale: 0.01, description: "Voltage of phase L1" },
       { address: 1003, name: "MB_ADD_R_VL2", label: "L2 Phase Voltage", unit: "V", scale: 0.01, description: "Voltage of phase L2" },
-      { address: 1004, name: "MB_ADD_R_VL3", label: "L3 Phase Voltage", unit: "V", scale: 0.01, description: "Voltage of phase L3" }
+      { address: 1004, name: "MB_ADD_R_VL3", label: "L3 Phase Voltage", unit: "V", scale: 0.01, description: "Voltage of phase L3" },
+      
+      { address: 1005, name: "MB_ADD_R_VL12", label: "L12 Faz Gerilimi", unit: "V", scale: 0.01, description: "-" },
+      { address: 1006, name: "MB_ADD_R_VL23", label: "L23 Faz Gerilimi", unit: "V", scale: 0.01, description: "-" },
+      { address: 1007, name: "MB_ADD_R_VL31", label: "L31 Faz Gerilimi", unit: "V", scale: 0.01, description: "-" },
+
+      { address: 1008, name: "MB_ADD_R_IL1", label: "I1 Faz Akımı", unit: "mA", scale: 0.1, description: "-" },
+      { address: 1009, name: "MB_ADD_R_IL2", label: "I2 Faz Akımı", unit: "mA", scale: 0.1, description: "-" },
+      { address: 1008, name: "MB_ADD_R_IL3", label: "I1 Faz Akımı", unit: "mA", scale: 0.1, description: "-" },
+      { address: 1009, name: "MB_ADD_R_ILN", label: "Nötür Akımı", unit: "mA", scale: 0.1, description: "-" }
+      
+      
     ];
 
     const onData = (chunk) => {
@@ -26,12 +39,13 @@ readMeasurement() {
 
         const values = [];
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < registerMeta.length; i++) {
           const hi = buffer[3 + i * 2];
           const lo = buffer[4 + i * 2];
           const raw = (hi << 8) | lo;
 
           const meta = registerMeta[i];
+          const scaled = raw * meta.scale;
           values.push({
             address: meta.address,
             name: meta.name,
@@ -41,7 +55,12 @@ readMeasurement() {
             unit: meta.unit,
             description: meta.description
           });
+          writeMeasurement(meta.label, scaled, meta.unit);
         }
+
+        
+       
+
 
         resolve(values); // send structured response
       }
@@ -145,7 +164,7 @@ readCTR() {
     });
   }
 
-  readLangauage() {
+  readLightStatus() {
     return new Promise((resolve, reject) => {
       this.modbus.readHoldingRegisters(0x01, 0x1770, 1); // Light_status 0 -> kapalı, 1-> Açık, 2-> Otomatik
       this.modbus.port.once('data', (data) => {

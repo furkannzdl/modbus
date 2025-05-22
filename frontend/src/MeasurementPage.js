@@ -12,10 +12,11 @@ const MeasurementPage = () => {
 
     useEffect(() => {
     const fetchData = () => {
-        axios.get('http://localhost:3000/api/measurement')
+        axios.get('http://localhost:4000/api/measurement')
         .then(res => {
             setData(res.data.data);
-            setGaugeValues(res.data.data.map(d => parseFloat(d.value))); // sadece sayısal değerler
+            console.log(res.data.data);
+            setGaugeValues(res.data.data.map(d => parseFloat(d.value))); 
             setLoading(false);
         })
         .catch(err => {

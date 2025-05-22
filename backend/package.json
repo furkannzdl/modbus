@@ -10,10 +10,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@influxdata/influxdb-client": "^1.35.0",
     "cors": "^2.8.5",
     "crc": "^4.3.2",
     "express": "^5.1.0",
+    "json2csv": "^6.0.0-alpha.2",
     "modbus-serial": "^8.0.21-no-serial-port",
+    "net": "^1.0.2",
     "serialport": "^13.0.0"
   }
 }
