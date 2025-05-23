@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const modbusService = require('./modbusService');
+
+const modbusTCPService = require('../Service/modbusTCPservice');
+
 
 
 function delay(ms) {
@@ -8,9 +10,46 @@ function delay(ms) {
 }
 
 
+// Read from 1000 to 1050 for mesaurement datas
+const readMesaurement = async (req, res) => {
+  try {
+    const start = parseInt(req.query.start) || 1000;
+    const count = parseInt(req.query.count) || 50;
+
+    const data = await modbusTCPService.readMesaurementDatas(start, count);
+
+    res.json({ message: 'Success', data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Read from 6000 to 6054 for mesaurement datas
+const readSettings = async (req, res) => {
+  try {
+    const start = parseInt(req.query.start) || 6000;
+    const count = parseInt(req.query.count) || 26;
+
+    const data = await modbusTCPService.readSettings(start, count);
+
+    res.json({ message: 'Success', data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { readMesaurement, readSettings };
+
+
+
+
+
+
+
+/*
 router.get('/measurement', async (req, res) => {
   try {
-    const measurements = await modbusService.readMeasurement();
+    const measurements = await modbusTCPService.readMeasurement();
 
     res.json({
       category: "Measurement Data",
@@ -44,3 +83,5 @@ router.get('/light-status', async (req, res) => {
 });
 
 module.exports = router;
+
+*/

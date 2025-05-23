@@ -9,19 +9,24 @@ const influxDB = new InfluxDB({ url, token });
 const writeApi = influxDB.getWriteApi(org, bucket);
 writeApi.useDefaultTags({ host: 'modbus-client' });
 
+const storeModbusRegisters = async (deviceId, parsedRegisters) => {
+  try {
+    parsedRegisters.forEach(reg => {
+      const point = new Point('modbus_register')
+        .tag('device_id', deviceId)
+        .tag('name', reg.name)
+        .tag('unit', reg.unit)
+        .floatField('value', reg.value)
+        .intField('address', reg.address); 
 
-function writeMeasurement(label, value, unit) {
-  const point = new Point('measurement')
-    .tag('type', label)
-    .floatField('value', parseFloat(value)) 
-    .stringField('unit', unit || '')
-    .timestamp(new Date());
+      writeApi.writePoint(point);
+    });
 
-  writeApi.writePoint(point);
-  console.log(`Influx written: ${label} = ${value} ${unit}`);
+    await writeApi.flush();
+    console.log(`✅ InfluxDB: ${parsedRegisters.length} register stored for device ${deviceId}`);
+  } catch (err) {
+    console.error('❌ Influx write error:', err);
+  }
+};
 
-
-}
-
-
-module.exports = { writeMeasurement };
+module.exports = { storeModbusRegisters };

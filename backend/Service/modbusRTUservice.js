@@ -1,4 +1,4 @@
-const Modbus = require('../modbus');
+const Modbus = require('../Protocol/modbusRTU');
 const { writeMeasurement } = require('../Connection/influxdb');
 
 

@@ -12,10 +12,9 @@ const MeasurementPage = () => {
 
     useEffect(() => {
     const fetchData = () => {
-        axios.get('http://localhost:4000/api/measurement')
+        axios.get('http://localhost:4000/modbus/read-mesaurement')
         .then(res => {
             setData(res.data.data);
-            console.log(res.data.data);
             setGaugeValues(res.data.data.map(d => parseFloat(d.value))); 
             setLoading(false);
         })
